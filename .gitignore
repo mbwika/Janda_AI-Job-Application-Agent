@@ -9,4 +9,4 @@ git rm --cached *.json
 # This will remove all JSON files from the index, but keep them in your working directory.
 # If you want to ignore all JSON files except for a specific one, you can do:
 # Ignore all JSON files except for important-config.json
-# !important-config.json
+# !important-config.json.env
