@@ -46,6 +46,14 @@ Module ==> Tech Stack (Free)
 6. RAG + QA ==> Haystack + Sentence Transformers 
 7. UI ==> Streamlit / Gradio / FastAPI + React 
 
+SETUP
+### 🔧 Model Download Required
+
+This project requires the `mistral-7b-instruct-v0.2.Q4_K_M.gguf` model file.
+
+1. Navigate `cd Janda_AI-Job-Application-Agent/rag-job-matcher`
+2. Download and bake the project with `./ensure-model.sh && COMPOSE_BAKE=true docker compose up --build`
+
 
   
 
