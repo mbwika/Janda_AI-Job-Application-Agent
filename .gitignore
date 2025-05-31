@@ -1,6 +1,7 @@
 # Ignore all JSON files
 *.json
 *.gguf
+*.env
 
 # If you have specific JSON files you want to keep, you can whitelist them like this:
 #!important-config.json
