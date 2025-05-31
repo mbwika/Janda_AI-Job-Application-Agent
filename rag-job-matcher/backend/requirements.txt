@@ -1,0 +1,13 @@
+# requirements.txt
+fastapi
+uvicorn
+numpy<2.0.0
+langchain
+huggingface_hub
+fastembed==0.5.1
+onnxruntime==1.18.0
+crewai
+langchain-community>=0.0.30
+llama-cpp-python
+langchain-openai
+python-multipart
