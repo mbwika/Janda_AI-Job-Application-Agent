@@ -16,14 +16,14 @@ services:
     environment:
       - PYTHONPATH=/app
 
+  services:
   llama-server:
     container_name: llama-server
     build:
       context: .
       dockerfile: ./backend/models/Dockerfile
     volumes:
-      # Mount local model file into container
-      - ./rag-job-matcher/backend/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf:/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf:ro
+      - ./models/mistral-7b-instruct-v0.2.Q4_K_M.gguf:/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf:ro
     ports:
       - "8001:8000"
     extra_hosts:
