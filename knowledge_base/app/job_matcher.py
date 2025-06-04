@@ -1,7 +1,7 @@
 
 # job_matcher.py
-from llama_index.core import VectorStoreIndex, StorageContext, Document
-from llama_index.vector_stores.faiss import FaissVectorStore
+from llama_index.core import StorageContext
+# from llama_index.vector_stores.faiss import FaissVectorStore
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core import Settings
 from llama_index.llms.llama_cpp import LlamaCPP
@@ -19,7 +19,7 @@ def match_jobs(jobs):
         raise RuntimeError("Vector store not found. Please run the index builder first.")
     # print("Files in faiss_index:", os.listdir(FAISS_INDEX_PATH))
     
-    vector_store = FaissVectorStore.from_persist_path(persist_path=FAISS_INDEX_PATH)
+    # vector_store = FaissVectorStore.from_persist_path(persist_path=FAISS_INDEX_PATH)
     storage_context = StorageContext.from_defaults(persist_dir="faiss_index")
     index = load_index_from_storage(storage_context)
     Settings.llm = LlamaCPP(
@@ -41,9 +41,9 @@ def match_jobs(jobs):
 
         if score_percent >= 70:
             matches.append({**job, "match_score": score_percent})
+            print(f"\n\n") 
 
-    # Sort by match_score in descending order
-    print(f"\n\n")    
+    # Sort by match_score in descending order   
     matches.sort(key=lambda x: x["match_score"], reverse=True)
 
     return matches
