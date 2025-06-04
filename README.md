@@ -49,10 +49,11 @@ Module ==> Tech Stack (Free)
 SETUP
 ### 🔧 Model Download Required
 
-This project requires the `mistral-7b-instruct-v0.2.Q4_K_M.gguf` model file.
+This project requires Docker to be installed, and the `mistral-7b-instruct-v0.2.Q4_K_M.gguf` model file to be present or downloaded as follows:
 
 1. Navigate `cd Janda_AI-Job-Application-Agent/rag-job-matcher`
-2. Download and bake the project with `./ensure-model.sh && COMPOSE_BAKE=true docker compose up --build`
+2. Make the file executable `chmod +x ensure-model.sh`
+3. Download and/or bake the project with `./ensure-model.sh && COMPOSE_BAKE=true docker compose up --build`
 
 
   
