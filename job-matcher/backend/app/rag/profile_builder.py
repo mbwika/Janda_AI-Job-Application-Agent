@@ -5,6 +5,7 @@ import json
 from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain.schema import AIMessage
+from pydantic import SecretStr
 
 # Configure logger
 logging.basicConfig(level=logging.INFO)
@@ -16,10 +17,8 @@ class ProfileBuilder:
 
         try:
             self.llm = ChatOpenAI(
-                base_url="http://host.docker.internal:8001/v1",
-                api_key="llama",  # ignored, but required by interface
+                api_key=SecretStr("llama"),  # ignored, but required by interface
                 temperature=0.1,
-                max_tokens=512,
                 model="mistral"
             )
             logger.info("Connected to local LLM server (ChatOpenAI with llama.cpp backend).")
@@ -62,9 +61,15 @@ class ProfileBuilder:
 
         try:
             if isinstance(response, AIMessage):
-             response_text = response.content
+                response_text = response.content
             else:
-             response_text = str(response)
+                response_text = response
+
+            # Ensure response_text is a string before parsing as JSON
+            if isinstance(response_text, (list, dict)):
+                response_text = json.dumps(response_text)
+            elif not isinstance(response_text, str):
+                response_text = str(response_text)
 
             profile = json.loads(response_text)
             logger.info("LLM response successfully parsed as JSON.")

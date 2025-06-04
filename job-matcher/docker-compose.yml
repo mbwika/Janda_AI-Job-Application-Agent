@@ -16,7 +16,6 @@ services:
     environment:
       - PYTHONPATH=/app
 
-  services:
   llama-server:
     container_name: llama-server
     build:

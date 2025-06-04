@@ -1,0 +1,10 @@
+faiss-cpu
+llama-index>=0.11.0
+InstructorEmbedding
+huggingface-hub
+llama-index-embeddings-huggingface
+fastapi
+uvicorn
+pydantic
+python-docx
+

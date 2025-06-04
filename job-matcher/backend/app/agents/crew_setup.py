@@ -63,36 +63,3 @@ class MatchAgentSetup:
             "profile": profile,
             "top_jobs": [j["job"] for j in top_jobs]
         }
-
-    
-# from crewai import Agent, Crew
-# from langchain.chat_models import ChatOpenAI
-# from app.rag.profile_builder import build_candidate_profile
-# from app.rag.vector_store import JobVectorStore
-
-# class MatcherCrew:
-#     def __init__(self, resume_text, jobs):
-#         self.llm = ChatOpenAI(model_name="gpt-4")
-#         self.resume_text = resume_text
-#         self.jobs = jobs
-
-#     def run(self):
-#         profile = build_candidate_profile(self.resume_text, self.llm)
-
-#         agent_matcher = Agent(
-#             role="Job Matcher",
-#             goal="Match jobs to a candidate's profile",
-#             backstory="Expert in job matching and profile interpretation",
-#             tools=[],
-#             llm=self.llm,
-#         )
-
-#         def matcher_task():
-#             vs = JobVectorStore()
-#             vs.index_jobs(self.jobs)
-#             search_query = f"Match for profile: {profile}"
-#             matches = vs.query_similar_jobs(search_query, k=5)
-#             return matches
-
-#         crew = Crew(agents=[agent_matcher], tasks=[matcher_task])
-#         return crew.run()
