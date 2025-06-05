@@ -1,4 +1,6 @@
-from fastapi import FastAPI, UploadFile, File
+# job_matcher.py
+
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 import os, shutil, json
 from app.resume_parser import extract_text_from_pdf, extract_text_from_docx
@@ -8,7 +10,7 @@ from app.job_matcher import match_jobs
 app = FastAPI()
 
 @app.post("/upload-resume/")
-async def upload_resume(file: UploadFile = File(...)):
+async def upload_resume(email: str = Form(...), file: UploadFile = File(...)):
     filename = file.filename or ""
     ext = os.path.splitext(filename)[-1].lower()
     if ext not in [".pdf", ".docx"]:
@@ -18,18 +20,14 @@ async def upload_resume(file: UploadFile = File(...)):
     with open(temp_path, "wb") as f:
         shutil.copyfileobj(file.file, f)
 
-    if ext == ".pdf":
-        text = extract_text_from_pdf(temp_path)
-    else:
-        text = extract_text_from_docx(temp_path)
-
-    embed_candidate(text)
+    text = extract_text_from_pdf(temp_path) if ext == ".pdf" else extract_text_from_docx(temp_path)
+    embed_candidate(email=email, text=text)
     os.remove(temp_path)
 
-    return {"status": "Candidate profile stored successfully."}
+    return {"status": f"Resume stored successfully for {email}"}
 
 @app.post("/match-jobs/")
-async def match_job_list(file: UploadFile = File(...)):
+async def match_job_list(email: str = Form(...), file: UploadFile = File(...)):
     jobs = json.loads(await file.read())
-    matched = match_jobs(jobs)
+    matched = match_jobs(email=email, jobs=jobs)
     return {"matched_jobs": matched}

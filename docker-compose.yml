@@ -1,9 +1,9 @@
 
-services:
+services: 
   matcher-api:
+    container_name: jobs_matcher
     build: ./knowledge_base
     ports:
       - "8000:8000"
     volumes:
-      - ./data:/app/data
-      - ./faiss_index:/app/faiss_index
+      - ./knowledge_base/faiss_index:/knowledge_base/faiss_index
