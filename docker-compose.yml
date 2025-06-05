@@ -6,4 +6,4 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./knowledge_base/faiss_index:/knowledge_base/faiss_index
+      - ./models:/app/models # Mounts local ./models to /app/models in container
