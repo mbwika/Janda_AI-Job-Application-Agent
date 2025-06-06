@@ -11,3 +11,4 @@ pdfplumber
 pydantic
 python-docx
 python-multipart
+llama-index-embeddings-fastembed

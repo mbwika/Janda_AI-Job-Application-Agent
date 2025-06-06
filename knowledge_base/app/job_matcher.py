@@ -1,9 +1,8 @@
 
 
 # job_matcher.py
-from llama_index.core import StorageContext
-from llama_index.vector_stores.faiss import FaissVectorStore
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+# from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.embeddings.fastembed import FastEmbedEmbedding
 from llama_index.core import Settings
 from llama_index.llms.llama_cpp import LlamaCPP
 from llama_index.core import StorageContext, load_index_from_storage
@@ -11,7 +10,8 @@ import requests
 import os
 
 def match_jobs(email: str, jobs):
-    Settings.embed_model = HuggingFaceEmbedding(model_name="hkunlp/instructor-xl")
+    # Settings.embed_model = HuggingFaceEmbedding(model_name="hkunlp/instructor-xl")
+    Settings.embed_model = FastEmbedEmbedding(model_name="BAAI/bge-base-en-v1.5")
     user_dir = f"faiss_index/{email}"
 
     model_path = os.getenv(

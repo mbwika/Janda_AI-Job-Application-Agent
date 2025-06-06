@@ -3,27 +3,15 @@
 # candidate_embedder.py
 
 from llama_index.core.schema import Document
-from llama_index.core.indices.vector_store import VectorStoreIndex
-# from llama_index.core import ServiceContext
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core import Settings
 from llama_index.vector_stores.faiss import FaissVectorStore
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
-from llama_index.core import VectorStoreIndex, load_index_from_storage
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.core import Settings
-from llama_index.core import StorageContext
+from llama_index.core import VectorStoreIndex
+import faiss
 import os
 
 def embed_candidate(email, text):
-    from llama_index.core.schema import Document
-    from llama_index.core.node_parser import SentenceSplitter
-    from llama_index.vector_stores.faiss import FaissVectorStore
-    from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-    from llama_index.core import Settings, StorageContext, VectorStoreIndex
-    import os
-    import faiss
 
     document = Document(text=text)
     embed_model = HuggingFaceEmbedding(model_name="hkunlp/instructor-xl")
