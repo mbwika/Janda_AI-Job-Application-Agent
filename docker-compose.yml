@@ -1,9 +1,59 @@
 
-services: 
+services:
   matcher-api:
     container_name: jobs_matcher
     build: ./knowledge_base
     ports:
       - "8000:8000"
     volumes:
-      - ./models:/app/models # Mounts local ./models to /app/models in container
+      - ./models:/app/models
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+
+  jobs_scraper:
+    container_name: jobs_scraper
+    build: ./jobs_scraper
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+    stdin_open: true
+    tty: true
+
+  mongodb:
+    image: mongo:7
+    container_name: mongodb 
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    env_file:
+      - .env
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongodb
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - ME_CONFIG_MONGODB_SERVER=mongodb  
+    env_file:
+      - .env
+
+volumes:
+  mongo_data:

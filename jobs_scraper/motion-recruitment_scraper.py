@@ -1,6 +1,6 @@
-import asyncio
+import os, asyncio, json
 from playwright.async_api import async_playwright
-import json
+from pymongo import MongoClient
 
 BASE_URL = "https://motionrecruitment.com"
 SEARCH_URL = f"{BASE_URL}/tech-jobs"
@@ -23,7 +23,7 @@ async def scrape_motion_jobs():
 
             link_el = await job_element.query_selector("a")
             relative_url = await link_el.get_attribute("href") if link_el else "#"
-            job_url = BASE_URL + relative_url
+            job_url = BASE_URL + (relative_url or "")
 
             location_el = await job_element.query_selector("div.JobItem_module_jobDetailsSection > p")
             location = await location_el.inner_text() if location_el else "N/A"
@@ -77,4 +77,20 @@ if __name__ == "__main__":
     with open("motion_jobs.json", "w", encoding="utf-8") as f:
         json.dump(scraped_jobs, f, ensure_ascii=False, indent=2)
 
-    print(f"✅ Scraped {len(scraped_jobs)} jobs and saved to motion_jobs.json")
+    print(f"✅ Done. Scraped {len(scraped_jobs)} jobs and saved to motion_jobs.json")
+
+# Store results in MongoDB/BSON file
+mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+try:
+    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=3000)
+    client.server_info()  # Force connection on a request as the
+    db = client["job_data"]
+    with open("motion_jobs.json", "r", encoding="utf-8") as f:
+        data = json.load(f)
+        if data:
+            db.motion_jobs.insert_many(data)
+            print(f"✅ Stored {len(data)} jobs in MongoDB collection 'motion_jobs'.")
+        else:
+            print("⚠️ No job data to store in MongoDB.")
+except Exception as e:
+    print(f"❌ Could not connect to MongoDB or store data: {e}")

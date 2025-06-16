@@ -9,6 +9,8 @@ llama-index-llms-llama-cpp
 llama-index-vector-stores-faiss
 pdfplumber
 pydantic
+pymongo
+requests
 python-docx
 python-multipart
 llama-index-embeddings-fastembed

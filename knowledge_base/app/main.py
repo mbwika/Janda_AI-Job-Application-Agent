@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse
+from .candidate_embedder import store_file_in_mongodb
 import os, shutil, json
 from app.resume_parser import extract_text_from_pdf, extract_text_from_docx
 from app.candidate_embedder import embed_candidate
@@ -19,6 +20,9 @@ async def upload_resume(email: str = Form(...), file: UploadFile = File(...)):
     temp_path = f"temp{ext}"
     with open(temp_path, "wb") as f:
         shutil.copyfileobj(file.file, f)
+    
+    # Store file in MongoDB
+    store_file_in_mongodb(temp_path, email)
 
     text = extract_text_from_pdf(temp_path) if ext == ".pdf" else extract_text_from_docx(temp_path)
     embed_candidate(email=email, text=text)

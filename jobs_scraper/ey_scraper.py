@@ -1,14 +1,13 @@
 
 # ey_scrapper.py
 # This script scrapes job details from a specific job listing page on the EY careers website.
-
+# only scrapes jobs on the first page: 25 jobs. needs to be modified to scrape all jobs with pagination.
 # https://careers.ey.com/search/?locationsearch=&optionsFacetsDD_country=US&optionsFacetsDD_customfield1= 
 
 from bs4 import BeautifulSoup
-import requests
+from pymongo import MongoClient
 from urllib.parse import urljoin
-import json
-import time
+import os, json, time, requests
 
 # Mapping country names to country codes used in EY job URLs
 country_code_map = {
@@ -102,57 +101,25 @@ for i, link in enumerate(all_job_links, 1):
         print(f"⚠️ Error scraping {link}: {e}")
     time.sleep(1)
 
-# Save results
+# Save  in JSON file
 file_name = f"ey_jobs_{country_code.lower()}.json"
 with open(file_name, "w", encoding="utf-8") as f:
     json.dump(all_jobs, f, indent=2, ensure_ascii=False)
 
 print(f"\n✅ Done. Saved {len(all_jobs)} jobs to {file_name}")
 
-
-# from bs4 import BeautifulSoup
-# import requests
-# from urllib.parse import urljoin
-
-# # base_url = "https://careers.ey.com/search/?locationsearch=&optionsFacetsDD_country=&optionsFacetsDD_customfield1="
-# location_us_url = "https://careers.ey.com/search/?createNewAlert=false&q=&locationsearch=&optionsFacetsDD_country=US&optionsFacetsDD_customfield1="
-# url_trim = "https://careers.ey.com/"
-# response = requests.get(location_us_url)
-# soup = BeautifulSoup(response.text, 'html.parser')
-
-# # Select the first <tr class="data-row"> as the row to extract job info from
-# row = soup.select_one('tr.data-row')
-# job_link_tag = row.select_one('a.jobTitle-link') if row else None
-# job_location_tag = row.select_one('td.colLocation .jobLocation') if row else None
-
-# # Find all job rows
-# job_rows = soup.select('tr.data-row')
-
-# # Collect job details from each row
-# all_jobs = []
-# for row in job_rows:
-#     job_link_tag = row.select_one('a.jobTitle-link')
-    
-#     job_details = {
-#         "title": job_link_tag.get_text(strip=True) if job_link_tag else None,
-#         "url": urljoin(url_trim, job_link_tag['href']) if job_link_tag else None
-#     }
-
-#     if job_details["title"] and job_details["url"]:
-#         all_jobs.append(job_details)
-
-# # Output all collected jobs
-# for job in all_jobs:
-#     print(job)
-
-# job_details = {
-#     "title": job_link_tag.get_text(strip=True) if job_link_tag else None,
-#     # "company": soup.select_one('div.company').get_text(strip=True) if soup.select_one('div.company') else None,
-#     # "location": soup.select_one('div.location').get_text(strip=True) if soup.select_one('div.location') else None,
-#     # "work_mode": soup.select_one('div.workMode').get_text(strip=True) if soup.select_one('div.workMode') else None,
-#     # "posted_date": soup.select_one('div.postedDate').get_text(strip=True) if soup.select_one('div.postedDate') else None,
-#     # "description": soup.select_one('div.jobDescription').get_text(strip=True) if soup.select_one('div.jobDescription') else None,
-#     "url": urljoin(url_trim, job_link_tag['href']) if job_link_tag else None
-# }
-
-# print(job_details)
+# Store results in MongoDB/BSON file
+mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+try:
+    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=3000)
+    client.server_info()  # Force connection on a request as the
+    db = client["job_data"]
+    with open(file_name, "r", encoding="utf-8") as f:
+        data = json.load(f)
+        if data:
+            db.ey_jobs.insert_many(data)
+            print(f"✅ Stored {len(data)} jobs in MongoDB collection 'ey_jobs'.")
+        else:
+            print("⚠️ No job data to store in MongoDB.")
+except Exception as e:
+    print(f"❌ Could not connect to MongoDB or store data: {e}")
