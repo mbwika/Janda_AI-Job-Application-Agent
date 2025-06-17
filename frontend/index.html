@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Job Assistant</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; background: #f7f7f7; }
+    #chatbox { border: 1px solid #ccc; background: white; padding: 1rem; max-width: 600px; margin-bottom: 1rem; }
+    .message { margin: 0.5rem 0; }
+    .user { font-weight: bold; color: blue; }
+    .bot { color: green; }
+  </style>
+</head>
+<body>
+  <h1>Welcome to AI Job Assistant</h1>
+  <div id="chatbox"></div>
+  <input type="text" id="input" placeholder="Enter your email or response..." style="width: 400px;" />
+  <button onclick="sendMessage()">Send</button>
+
+  <script>
+    const chatbox = document.getElementById('chatbox');
+    const input = document.getElementById('input');
+    let userEmail = "";
+    let profileStatus = "";
+
+    function appendMessage(sender, text) {
+      const msg = document.createElement('div');
+      msg.className = 'message ' + sender;
+      msg.textContent = `${sender === 'user' ? 'You' : 'Assistant'}: ${text}`;
+      chatbox.appendChild(msg);
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+      appendMessage('user', text);
+      input.value = '';
+
+      if (!userEmail) {
+        userEmail = text;
+        const res = await fetch('/check-profile/', {
+          method: 'POST',
+          body: new FormData(Object.assign(document.createElement('form'), { email: userEmail }))
+        });
+        const json = await res.json();
+        profileStatus = json.status;
+        appendMessage('bot', json.message);
+      } else {
+        if (profileStatus === 'new') {
+          appendMessage('bot', 'Please upload your resume via the upload endpoint.');
+        } else {
+          if (text.toLowerCase().includes('upload')) {
+            appendMessage('bot', 'You can upload additional documents now.');
+          } else if (text.toLowerCase().includes('search')) {
+            appendMessage('bot', 'Starting job search and matching...');
+          } else {
+            appendMessage('bot', 'I didn\'t understand. Do you want to upload more documents or begin job search?');
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>

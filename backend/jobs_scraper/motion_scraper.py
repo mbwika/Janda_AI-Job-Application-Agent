@@ -1,9 +1,12 @@
-import os, asyncio, json
+# motion_scraper.py
+
+import os, json, asyncio
 from playwright.async_api import async_playwright
 from pymongo import MongoClient
 
 BASE_URL = "https://motionrecruitment.com"
 SEARCH_URL = f"{BASE_URL}/tech-jobs"
+
 
 async def scrape_motion_jobs():
     async with async_playwright() as p:
@@ -12,7 +15,6 @@ async def scrape_motion_jobs():
         await page.goto(SEARCH_URL, timeout=120_000)
 
         await page.wait_for_selector("ul.JobsList_module_list")
-
         job_elements = await page.query_selector_all("li.JobItem_module_jobItem")
 
         jobs = []
@@ -35,7 +37,7 @@ async def scrape_motion_jobs():
             job_type = await job_type_els[0].inner_text() if len(job_type_els) > 0 else "N/A"
             salary = await job_type_els[1].inner_text() if len(job_type_els) > 1 else "N/A"
 
-            # Visit each job URL to get more details
+            # Visit job detail page
             job_page = await browser.new_page()
             await job_page.goto(job_url, timeout=60_000)
 
@@ -66,31 +68,30 @@ async def scrape_motion_jobs():
         await browser.close()
         return jobs
 
+
+def store_in_mongodb(jobs: list, collection_name="motion_jobs"):
+    if not jobs:
+        return
+
+    mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=3000)
+    db = client["job_data"]
+    db[collection_name].insert_many(jobs)
+    print(f"✅ Stored {len(jobs)} jobs in MongoDB collection '{collection_name}'.")
+
+
+def save_to_json(jobs: list, filename="motion_jobs.json"):
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(jobs, f, ensure_ascii=False, indent=2)
+    print(f"✅ Saved {len(jobs)} jobs to {filename}")
+
+
 if __name__ == "__main__":
     scraped_jobs = asyncio.run(scrape_motion_jobs())
     for job in scraped_jobs:
-        print("="*80)
+        print("=" * 80)
         for key, value in job.items():
             print(f"{key}: {value}")
 
-    # Export to JSON
-    with open("motion_jobs.json", "w", encoding="utf-8") as f:
-        json.dump(scraped_jobs, f, ensure_ascii=False, indent=2)
-
-    print(f"✅ Done. Scraped {len(scraped_jobs)} jobs and saved to motion_jobs.json")
-
-# Store results in MongoDB/BSON file
-mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
-try:
-    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=3000)
-    client.server_info()  # Force connection on a request as the
-    db = client["job_data"]
-    with open("motion_jobs.json", "r", encoding="utf-8") as f:
-        data = json.load(f)
-        if data:
-            db.motion_jobs.insert_many(data)
-            print(f"✅ Stored {len(data)} jobs in MongoDB collection 'motion_jobs'.")
-        else:
-            print("⚠️ No job data to store in MongoDB.")
-except Exception as e:
-    print(f"❌ Could not connect to MongoDB or store data: {e}")
+    save_to_json(scraped_jobs)
+    store_in_mongodb(scraped_jobs)

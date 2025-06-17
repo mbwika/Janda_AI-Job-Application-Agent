@@ -14,3 +14,11 @@ requests
 python-docx
 python-multipart
 llama-index-embeddings-fastembed
+beautifulsoup4
+streamlit
+llama-cpp-python==0.2.54
+crewai
+langchain-community
+playwright
+urllib3
+asyncio

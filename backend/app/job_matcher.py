@@ -20,8 +20,9 @@ def get_user_raw_file(email):
     if file_doc:
         print(f"File found for {email}, returning content.")
         return file_doc.read()
-    return None
-    raise RuntimeError(f"Files for {email} not found. Please upload resume first.")
+    else:
+        raise RuntimeError(f"Files for {email} not found. Please upload resume first.")
+    # return None
 
 def match_jobs(email: str, jobs):
     print(f"Matching jobs for user: {email}")
@@ -37,7 +38,7 @@ def match_jobs(email: str, jobs):
     model_url = "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/resolve/main/mistral-7b-instruct-v0.2.Q4_K_M.gguf"
     
     if not os.path.exists(os.path.join(user_dir, "default__vector_store.json")):
-        raise RuntimeError(f"Vector store not found for {email}. Please upload resume first.")
+     raise RuntimeError(f"Vector store not found for {email}. Please upload resume first.")
 
     # load vector store & index from directory, not file
     print(f"Loading index from storage context for user: {email}")
