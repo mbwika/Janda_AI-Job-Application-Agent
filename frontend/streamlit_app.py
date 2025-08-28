@@ -5,7 +5,7 @@ import streamlit as st
 import requests
 import os
 
-BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+BACKEND_URL = os.getenv("BACKEND_URL", "http://backend:8100")
 
 st.set_page_config(page_title="AI Job Assistant", layout="centered")
 st.title("🤖 AI Job Assistant")
@@ -34,12 +34,12 @@ elif st.session_state.step == "profile_response":
     st.markdown(f"### 📬 {st.session_state.profile_message}")
 
     if st.session_state.profile_status == "new":
-        st.markdown("Please [upload your resume here](http://localhost:8000/docs#/default/upload_resume_upload_resume_post) to get started.")
+        st.markdown("Please [upload your resume here](http://localhost:8100/docs#/default/upload_resume_upload_resume_post) to get started.")
     else:
         col1, col2 = st.columns(2)
         with col1:
             if st.button("Upload More Documents"):
-                st.markdown("Please [upload your resume here](http://localhost:8000/docs#/default/upload_resume_upload_resume_post)")
+                st.markdown("Please [upload your resume here](http://localhost:8100/docs#/default/upload_resume_upload_resume_post)")
         with col2:
             if st.button("Proceed to Job Search"):
                 st.markdown("Starting job search and matching...")

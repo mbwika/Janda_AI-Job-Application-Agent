@@ -3,15 +3,32 @@ from crewai import Agent
 # from langchain.llms import LlamaCpp
 from langchain_community.llms import LlamaCpp
 import os
+import requests
+
+MODEL_PATH = os.getenv(
+    "MODEL_PATH",
+    os.path.abspath("models/mistral-7b-instruct-v0.2.Q4_K_M.gguf")
+)
+MODEL_URL = "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/resolve/main/mistral-7b-instruct-v0.2.Q4_K_M.gguf"
+
+# Ensure model directory exists
+os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+
+# Download model if not present
+if not os.path.exists(MODEL_PATH):
+    print(f"Model file not found at {MODEL_PATH}. Downloading from {MODEL_URL}...")
+    response = requests.get(MODEL_URL, stream=True)
+    if response.status_code == 200:
+        with open(MODEL_PATH, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+        print(f"Model downloaded to {MODEL_PATH}.")
+    else:
+        raise RuntimeError(f"Failed to download model from {MODEL_URL}. Status code: {response.status_code}")
 
 llm = LlamaCpp(
-    # Check if the model path is set in environment variables, otherwise use default
-    model_path = os.getenv(
-        "MODEL_PATH",
-        os.path.abspath("models/mistral-7b-instruct-v0.2.Q4_K_M.gguf")
-    ),
-    # If the model path does not exist, download it from Hugging Face
-    model_url = "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/resolve/main/mistral-7b-instruct-v0.2.Q4_K_M.gguf",
+    model_path=MODEL_PATH,
     temperature=0.2,
     max_tokens=1024,
     n_ctx=4096,

@@ -10,7 +10,7 @@ import os, requests, json
 
 def get_user_raw_file(email):
     print(f"Fetching raw file for user: {email}")
-    mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+    mongo_uri = os.getenv("MONGO_URI", "mongodb://mongodb:27017/")
     print("MongoDB URI:", mongo_uri)
     client = MongoClient(mongo_uri)
     db = client["candidate_data"]

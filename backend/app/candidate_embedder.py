@@ -53,7 +53,7 @@ def embed_candidate(email, text):
 # Save the uploaded raw file in MongoDB using GridFS or as a binary field
 def store_file_in_mongodb(file_path, email):
     print("Storing file in MongoDB:", file_path)
-    mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+    mongo_uri = os.getenv("MONGO_URI", "mongodb://mongodb:27017/")
     print("MongoDB URI:", mongo_uri)
     client = MongoClient(mongo_uri)
     db = client["candidate_data"]

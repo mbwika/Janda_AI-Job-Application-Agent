@@ -1,4 +1,4 @@
-FROM python:3.14.0rc1-slim
+FROM python:3.12.0rc1-slim
 
 WORKDIR /app
 
@@ -6,6 +6,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
+    cmake \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install

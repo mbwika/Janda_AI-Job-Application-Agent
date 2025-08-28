@@ -1,6 +1,6 @@
 # File: backend/Dockerfile
 
-FROM python:3.10-slim
+FROM python:3.12.0rc1-slim
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -23,8 +23,8 @@ RUN pip install --upgrade pip && \
 # Copy the rest of the backend app into /app/backend
 COPY backend /app/backend
 
-# Expose port 8000 (optional but useful)
-EXPOSE 8000
+# Expose port 8100 (optional but useful)
+EXPOSE 8100
 
 # Start FastAPI with uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--limit-max-requests", "100"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8100", "--limit-max-requests", "100"]

@@ -25,7 +25,7 @@ import numpy as np
 def check_user_profile(email: str) -> bool:
     """Returns True if profile exists in both MongoDB and FAISS."""
     # ✅ MongoDB Check
-    mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+    mongo_uri = os.getenv("MONGO_URI", "mongodb://mongodb:27017/")
     client = MongoClient(mongo_uri)
     db = client["job_data"]
     exists_in_db = db.user_profiles.find_one({"email": email}) is not None

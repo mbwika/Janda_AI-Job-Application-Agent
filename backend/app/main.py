@@ -32,7 +32,7 @@ app = FastAPI()
 # Allow CORS for Streamlit
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8501"],
+    allow_origins=["http://localhost:8501", "http://janda-frontend:8501"],
     allow_methods=["*"],
     allow_headers=["*"],
 )

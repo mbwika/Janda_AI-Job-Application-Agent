@@ -16,7 +16,7 @@ python-multipart
 llama-index-embeddings-fastembed
 beautifulsoup4
 streamlit
-llama-cpp-python==0.2.54
+llama-cpp-python
 crewai
 langchain-community
 playwright
@@ -25,7 +25,7 @@ asyncio
 anyio>=4.4.0 # not directly required, pinned by Snyk to avoid a vulnerability
 pillow>=10.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
 protobuf>=4.25.8 # not directly required, pinned by Snyk to avoid a vulnerability
-pyarrow>=14.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
+pyarrow
 zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
 starlette>=0.47.2 # not directly required, pinned by Snyk to avoid a vulnerability
 h11>=0.16.0 # not directly required, pinned by Snyk to avoid a vulnerability
