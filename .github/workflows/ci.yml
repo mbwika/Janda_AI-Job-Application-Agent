@@ -71,21 +71,18 @@ jobs:
 
       - name: Run mypy
         run: |
-          # Run mypy static type checks for the `backend` package only and
-          # exclude compatibility wrapper files under backend/app which duplicate
-          # modules already present under backend/utils (this prevents duplicate
-          # module errors). Adjust this target if you prefer a different layout.
+          # Run mypy in package mode to avoid duplicate-source module errors.
           pip install mypy
-          mypy backend --exclude 'backend/app/.*' --show-column-numbers --no-color-output || true
+          mypy -p backend --exclude 'backend/app/.*' --show-column-numbers --no-color-output || true
         continue-on-error: true
 
       - name: Annotate mypy with reviewdog
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Re-run mypy for the `backend` package (excluding compatibility wrappers)
+          # Re-run mypy in package mode for `backend` (excluding compatibility wrappers)
           # and feed its output into reviewdog for PR annotations.
-          mypy backend --exclude 'backend/app/.*' --show-column-numbers --no-color-output 2>&1 | reviewdog -f=mypy -name="mypy" -reporter=github-pr-review -level=warning || true
+          mypy -p backend --exclude 'backend/app/.*' --show-column-numbers --no-color-output 2>&1 | reviewdog -f=mypy -name="mypy" -reporter=github-pr-review -level=warning || true
 
       - name: Run tests
         run: pytest -q
