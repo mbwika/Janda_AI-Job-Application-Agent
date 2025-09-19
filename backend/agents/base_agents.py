@@ -1,9 +1,25 @@
-# job_agent.py
+"""Agent definitions and LLM wiring.
+
+This module defines the higher-level Agent objects used by the application and
+wires them to a shared `llm` instance. The module intentionally keeps
+initialization simple: the LLM is created at import time from a local model
+path. For testability, automatic model download can be disabled via
+`MODEL_AUTO_DOWNLOAD=false` and the `LlamaCpp` symbol can be monkeypatched in
+tests to avoid loading a real model.
+"""
 from crewai import Agent
 # from langchain.llms import LlamaCpp
 from langchain_community.llms import LlamaCpp
 import os
 import requests
+from requests.adapters import HTTPAdapter
+from requests.exceptions import RequestException
+from urllib3.util.retry import Retry
+import hashlib
+import tempfile
+import sys
+import time
+import logging
 
 MODEL_PATH = os.getenv(
     "MODEL_PATH",
@@ -11,22 +27,35 @@ MODEL_PATH = os.getenv(
 )
 MODEL_URL = "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/resolve/main/mistral-7b-instruct-v0.2.Q4_K_M.gguf"
 
+from backend.logging_config import configure_logging  # ensures logging is configured
+from backend.utils.download import download_model
+
 # Ensure model directory exists
 os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
 
-# Download model if not present
-if not os.path.exists(MODEL_PATH):
-    print(f"Model file not found at {MODEL_PATH}. Downloading from {MODEL_URL}...")
-    response = requests.get(MODEL_URL, stream=True)
-    if response.status_code == 200:
-        with open(MODEL_PATH, "wb") as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                if chunk:
-                    f.write(chunk)
-        print(f"Model downloaded to {MODEL_PATH}.")
-    else:
-        raise RuntimeError(f"Failed to download model from {MODEL_URL}. Status code: {response.status_code}")
+logger = logging.getLogger(__name__)
 
+# Auto-download guard: allow disabling automatic download during imports/tests
+# Default is enabled; set MODEL_AUTO_DOWNLOAD=false to prevent auto-download.
+# This makes tests faster and avoids network I/O at import time.
+MODEL_AUTO = os.getenv("MODEL_AUTO_DOWNLOAD", "true").lower() in ("1", "true", "yes")
+if MODEL_AUTO and not os.path.exists(MODEL_PATH):
+    # Attempt to download model using the shared download util. Any exception
+    # will propagate so the host can see errors during startup.
+    download_model(
+        MODEL_URL,
+        MODEL_PATH,
+        model_sha256=os.getenv("MODEL_SHA256"),
+        timeout=(10, 60),
+        total_retries=5,
+        backoff_factor=1,
+        progress=os.getenv("MODEL_DOWNLOAD_PROGRESS", "false").lower() in ("1", "true", "yes"),
+    )
+
+# Instantiate LLM only when model is present (or assumed to be present).
+# Note: if you want to avoid instantiating a real LLM in unit tests, set
+# MODEL_AUTO_DOWNLOAD=false and monkeypatch `LlamaCpp` to a dummy class before
+# importing this module.
 llm = LlamaCpp(
     model_path=MODEL_PATH,
     temperature=0.2,

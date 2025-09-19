@@ -26,6 +26,38 @@ SETUP
 1. For Docker setup, bake with `COMPOSE_BAKE=true docker compose up --build`
 
 
+Run CI locally
+----------------
+
+To reproduce the GitHub Actions CI steps locally, use a Python 3.11/3.12 virtualenv and run the following commands:
+
+```bash
+# create a virtualenv (optional but recommended)
+python -m venv .venv
+source .venv/bin/activate
+
+# upgrade pip and install dev deps
+python -m pip install --upgrade pip
+pip install -r requirements-dev.txt
+
+# lint (flake8)
+flake8 || true
+
+# static types (mypy)
+mypy || true
+
+# run test suite
+pytest -q
+
+# security scan (bandit)
+bandit -r backend/agents -n 5 || true
+```
+
+Notes:
+- The `|| true` entries mirror the CI behavior where we run linters/type-checkers/bandit in best-effort mode; remove `|| true` to make these steps fail on errors.
+- Use Python 3.11 or 3.12 to match the CI matrix.
+
+
   
 
   

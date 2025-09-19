@@ -1,16 +1,8 @@
-import pdfplumber
-import docx
+"""Compatibility wrapper that re-exports from `backend.utils.resume_parser`.
 
-def extract_text_from_pdf(file_path):
-    print("Extracting text from PDF:", file_path)
-    text = ""
-    with pdfplumber.open(file_path) as pdf:
-        for page in pdf.pages:
-            print("Extracting page:", page.page_number)
-            text += page.extract_text() or ""
-    return text.strip()
+This keeps existing imports (`from app.resume_parser import ...`) working while the
+implementation lives in `backend/utils/resume_parser.py`.
+"""
+from backend.utils.resume_parser import extract_text_from_pdf, extract_text_from_docx
 
-def extract_text_from_docx(file_path):
-    print("Extracting text from Docx:", file_path)
-    doc = docx.Document(file_path)
-    return "\n".join([para.text for para in doc.paragraphs])
+__all__ = ["extract_text_from_pdf", "extract_text_from_docx"]

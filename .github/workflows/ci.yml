@@ -1,0 +1,93 @@
+name: CI
+
+# Trigger CI on pushes and pull requests to the main branch
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    # Run the job across multiple Python versions to catch compatibility issues
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.11, 3.12]
+    steps:
+      # Checkout repo so the workflow can run tests against the code
+      - uses: actions/checkout@v4
+
+      # Install a supported Python version. We chose 3.12 because some native
+      # dependencies (like binary wheels) are tested with 3.12 in this project.
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # Cache pip downloads between runs to speed up CI. Cache key depends on
+      # the hash of `requirements-dev.txt` so updates invalidate cache.
+      - name: Cache pip & wheels
+        uses: actions/cache@v4
+        with:
+          # Cache both pip cache and wheels to speed up installs
+          path: |
+            ~/.cache/pip
+            ~/.cache/pip/wheels
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements-dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
+            ${{ runner.os }}-pip-
+
+      # Install development/test dependencies. The script upgrades pip first
+      # to avoid older pip issues on runners.
+      - name: Install dev requirements
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+
+      # Run the Python test suite. Use -q for compact output in CI logs.
+      - name: Run flake8
+        run: |
+          # Install flake8 and run it, writing output in a machine-readable format
+          pip install flake8
+          # Use --format=default (flake8's default) and pipe to reviewdog in the next step
+          flake8 --exit-zero | tee flake8.out
+
+      - name: Install reviewdog
+        run: |
+          # Install reviewdog CLI (Python wrapper) used to post annotations to PRs
+          python -m pip install --upgrade pip
+          pip install reviewdog
+
+      - name: Annotate flake8 with reviewdog
+        run: |
+          # Pipe flake8 output into reviewdog so annotations appear on the PR
+          if [ -f flake8.out ]; then
+            reviewdog -f=flake8 -name="flake8" -reporter=github-pr-review -level=warning < flake8.out || true
+          else
+            echo "flake8 output missing"
+          fi
+
+      - name: Run mypy
+        run: |
+          # Run mypy static type checks and capture output for reviewdog
+          pip install mypy
+          mypy --show-column-numbers --no-color-output || true
+        continue-on-error: true
+
+      - name: Annotate mypy with reviewdog
+        run: |
+          # Pipe mypy output into reviewdog for PR annotations
+          # Run mypy again with machine-friendly output and feed into reviewdog
+          pip install reviewdog
+          mypy --show-column-numbers --no-color-output 2>&1 | reviewdog -f=mypy -name="mypy" -reporter=github-pr-review -level=warning || true
+
+      - name: Run tests
+        run: pytest -q
+
+      # Run Bandit security scans on the backend agents directory. The
+      # `|| true` keeps the overall job green even if bandit finds issues; if
+      # you'd prefer CI to fail when Bandit reports problems, remove `|| true`.
+      - name: Run bandit
+        run: bandit -r backend/agents -n 5 || true

@@ -1,0 +1,5 @@
+pytest
+bandit
+requests
+flake8
+mypy
