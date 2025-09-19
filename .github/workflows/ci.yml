@@ -54,11 +54,9 @@ jobs:
           # Use --format=default (flake8's default) and pipe to reviewdog in the next step
           flake8 --exit-zero | tee flake8.out
 
-      - name: Install reviewdog
-        run: |
-          # Install reviewdog CLI (Python wrapper) used to post annotations to PRs
-          python -m pip install --upgrade pip
-          pip install reviewdog
+      - name: Install reviewdog via action
+        # Use the official reviewdog setup action to install the reviewdog CLI binary
+        uses: reviewdog/action-setup@v1
 
       - name: Annotate flake8 with reviewdog
         run: |
@@ -80,7 +78,6 @@ jobs:
         run: |
           # Pipe mypy output into reviewdog for PR annotations
           # Run mypy again with machine-friendly output and feed into reviewdog
-          pip install reviewdog
           mypy --show-column-numbers --no-color-output 2>&1 | reviewdog -f=mypy -name="mypy" -reporter=github-pr-review -level=warning || true
 
       - name: Run tests
