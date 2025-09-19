@@ -66,9 +66,17 @@ def download_model(
         with session.get(url, stream=True, timeout=timeout) as response:
             response.raise_for_status()
 
-            total = response.headers.get("content-length")
-            if total is not None:
-                total = int(total)
+            # Read content-length header and convert to int when present.
+            # Use a separate variable to avoid `str | None` -> `int` assignment
+            # which mypy flags as incompatible.
+            total_header = response.headers.get("content-length")
+            total: Optional[int] = None
+            if total_header is not None:
+                try:
+                    total = int(total_header)
+                except (TypeError, ValueError):
+                    # If header is malformed, treat as unknown size.
+                    total = None
 
             with tempfile.NamedTemporaryFile(delete=False) as tmpf:
                 tmp_path = tmpf.name
@@ -85,7 +93,7 @@ def download_model(
 
                     if progress and (downloaded % (1024 * 1024) < len(chunk) or (total and downloaded == total)):
                         elapsed = time.time() - start
-                        percent = (downloaded / total * 100) if total else None
+                        percent = (downloaded / total * 100) if total is not None and total != 0 else None
                         if percent is not None:
                             logger.info("Downloaded %d/%d bytes (%.1f%%) in %.1fs", downloaded, total, percent, elapsed)
                         else:
