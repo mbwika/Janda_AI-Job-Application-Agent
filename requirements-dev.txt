@@ -3,3 +3,15 @@ bandit
 requests
 flake8
 mypy
+types-requests
+types-urllib3
+types-Deprecated
+types-PyYAML
+types-cachetools
+types-decorator
+types-pycurl
+types-pytz
+types-simplejson
+types-tabulate
+types-toml
+types-ujson

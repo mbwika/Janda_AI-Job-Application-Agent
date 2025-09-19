@@ -74,7 +74,7 @@ def store_in_mongodb(jobs: list, collection_name="motion_jobs"):
         return
 
     mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
-    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=3000)
+    client: MongoClient = MongoClient(mongo_uri, serverSelectionTimeoutMS=3000)
     db = client["job_data"]
     db[collection_name].insert_many(jobs)
     print(f"✅ Stored {len(jobs)} jobs in MongoDB collection '{collection_name}'.")
