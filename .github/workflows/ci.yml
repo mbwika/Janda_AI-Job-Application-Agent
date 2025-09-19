@@ -71,9 +71,9 @@ jobs:
 
       - name: Run mypy
         run: |
-          # Run mypy static type checks and capture output for reviewdog
+          # Run mypy static type checks for the repo root and capture output for reviewdog
           pip install mypy
-          mypy --show-column-numbers --no-color-output || true
+          mypy . --show-column-numbers --no-color-output || true
         continue-on-error: true
 
       - name: Annotate mypy with reviewdog
@@ -81,8 +81,8 @@ jobs:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Pipe mypy output into reviewdog for PR annotations
-          # Run mypy again with machine-friendly output and feed into reviewdog
-          mypy --show-column-numbers --no-color-output 2>&1 | reviewdog -f=mypy -name="mypy" -reporter=github-pr-review -level=warning || true
+          # Re-run mypy on the repo root and feed into reviewdog
+          mypy . --show-column-numbers --no-color-output 2>&1 | reviewdog -f=mypy -name="mypy" -reporter=github-pr-review -level=warning || true
 
       - name: Run tests
         run: pytest -q
