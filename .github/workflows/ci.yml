@@ -93,3 +93,16 @@ jobs:
       # you'd prefer CI to fail when Bandit reports problems, remove `|| true`.
       - name: Run bandit
         run: bandit -r backend/agents -n 5 || true
+
+      - name: Run scancode SCA (Docker)
+        # Use Docker image to avoid installing system dependencies on the runner
+        run: |
+          echo "Running scancode-toolkit in Docker to produce scancode-report.json"
+          docker run --rm -v "$PWD":/code -w /code nexB/scancode-toolkit:latest scancode --format json --strip-root --output-file /code/scancode-report.json /code || true
+
+      - name: Upload scancode report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scancode-report
+          path: scancode-report.json
