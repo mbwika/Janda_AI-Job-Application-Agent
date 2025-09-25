@@ -1,6 +1,6 @@
 # File: backend/Dockerfile
 
-FROM python:3.12.0rc1-slim
+FROM python:3.14.0rc2-slim
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
